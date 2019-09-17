@@ -64,7 +64,14 @@ def getMd5ForFile(file)
     if fileContentMd5Dict.has_key? file
         fileContentMd5 = fileContentMd5Dict[file]
     else
-        fileContentMd5 = getMd5ForContent(File.read(file))
+        fileContent = File.read(file)
+        if file.end_with? '.xcconfig'
+            # do not need change md5 if search path change
+            fileContent = fileContent.gsub(/FRAMEWORK_SEARCH_PATHS = .*\n/, '')
+            fileContent = fileContent.gsub(/HEADER_SEARCH_PATHS = .*\n/, '')
+            fileContent = fileContent.gsub(/LIBRARY_SEARCH_PATHS = .*\n/, '')
+        end
+        fileContentMd5 = getMd5ForContent(fileContent)
         fileContentMd5Dict[file] = fileContentMd5
     end
     return fileContentMd5
@@ -213,7 +220,8 @@ def getWorkspacePath
     workspacePath = dirArray.detect { |dir|
         dir.end_with? ".xcworkspace"
     }
-    return workspacePath
+    return workspacePath if workspacePath
+    return ''
 end
 
 def getProjectPathArray(workspacePath)
@@ -273,6 +281,7 @@ def getFilePathDict(projectArray)
 end
 
 def canCacheTarget(target)
+    return false unless target.class == Xcodeproj::Project::Object::PBXNativeTarget
     return false if target.name.start_with?('Pods-')
     productName = getProductNameForTarget(target)
     return false if productName.include?('$')
