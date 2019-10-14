@@ -539,10 +539,8 @@ cacheProductsFromBuildDir(ARGV[0])
         addition = 'ruby auto_build_cache_copy_product.rb '
         if content.include? '$PODS_CONFIGURATION_BUILD_DIR'
             addition = addition + '$PODS_CONFIGURATION_BUILD_DIR'
-        elsif content.include? '${PODS_CONFIGURATION_BUILD_DIR}'
-            addition = addition + '${PODS_CONFIGURATION_BUILD_DIR}'
         else
-            next
+            addition = addition + '${PODS_CONFIGURATION_BUILD_DIR}'
         end
         addition = addition + ' >> auto_build_cache_copy_product_log.txt'
         next if content.include? addition
